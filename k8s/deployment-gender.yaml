@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: gender-container
-          image: us-east1-docker.pkg.dev/carbon-ray-415302/sa/node_microservice_gender:latest
+          image: us-east1-docker.pkg.dev/carbon-ray-415302/sa/node_microservice_gender_${{ env.ENVIRONMENT }}:latest
           ports:
             - containerPort: 3001

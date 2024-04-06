@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: name
-          image: us-east1-docker.pkg.dev/carbon-ray-415302/sa/node_microservice_name:latest
+          image: us-east1-docker.pkg.dev/carbon-ray-415302/sa/node_microservice_name_${{ env.ENVIRONMENT }}:latest
           ports:
             - containerPort: 3002
