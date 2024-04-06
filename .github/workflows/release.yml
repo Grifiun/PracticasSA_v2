@@ -110,7 +110,7 @@ jobs:
       - name: Push Docker Image to Artifact Registry Microservice age
         env:
           GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
-          IMAGE_NAME_MS: node_microservice_age_$ENVIRONMENT
+          IMAGE_NAME_MS: node_microservice_age_${{ env.ENVIRONMENT }}
         run: |
           cd age_microservice/
           docker build -t $IMAGE_NAME_MS:latest .
@@ -122,7 +122,7 @@ jobs:
       - name: Push Docker Image to Artifact Registry Microservice gender
         env:
           GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
-          IMAGE_NAME_MS: node_microservice_gender_$ENVIRONMENT
+          IMAGE_NAME_MS: node_microservice_gender_${{ env.ENVIRONMENT }}
         run: |
           cd gender_microservice/
           docker build -t $IMAGE_NAME_MS:latest .
@@ -134,7 +134,7 @@ jobs:
       - name: Push Docker Image to Artifact Registry Microservice name
         env:
           GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
-          IMAGE_NAME_MS: node_microservice_name_$ENVIRONMENT
+          IMAGE_NAME_MS: node_microservice_name_${{ env.ENVIRONMENT }}
         run: |
           cd name_microservice/
           docker build -t $IMAGE_NAME_MS:latest .
