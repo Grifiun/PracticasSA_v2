@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gender-deployment
+  labels:
+    app: gender
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gender
+  template:
+    metadata:
+      labels:
+        app: gender
+    spec:
+      containers:
+        - name: gender-container
+          image: us-east1-docker.pkg.dev/carbon-ray-415302/sa/node_microservice_gender:latest
+          ports:
+            - containerPort: 3001

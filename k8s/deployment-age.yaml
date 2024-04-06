@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: age-deployment 
+  labels:
+    app: age
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: age
+  template:
+    metadata:
+      labels:
+        app: age
+    spec:
+      containers:
+        - name: age-container
+          image: us-east1-docker.pkg.dev/carbon-ray-415302/sa/node_microservice_age:latest
+          ports:
+            - containerPort: 3000

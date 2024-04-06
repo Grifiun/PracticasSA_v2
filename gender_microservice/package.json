@@ -1,0 +1,23 @@
+{
+  "name": "gender_microservice",
+  "version": "1.0.0",
+  "description": "get age from name",
+  "main": "app.js",
+  "scripts": {
+    "test": "nyc mocha tests/**/*.js",
+    "start": "node app.js",
+    "build": "npm install && npm run test"
+  },
+  "author": "Grifiun",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.7",
+    "express": "^4.18.3",
+    "nodemon": "^3.1.0"
+  },
+  "devDependencies": {
+    "mocha": "^10.4.0",
+    "nyc": "^15.1.0",
+    "sinon": "^17.0.1"
+  }
+}

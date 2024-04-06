@@ -1,0 +1,146 @@
+name: SA_P3 CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version:
+          - 21.7.0
+
+    steps:
+      - name: Checkout and copy code to workflow
+        uses: actions/checkout@v2
+
+      - name: Configure Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      #  Configurar microservicios
+      - name: Install and Build Microservice age
+        run: |
+          cd age_microservice/
+          npm install
+          npm run build
+
+      - name: Install and Build Microservice gender
+        run: |
+          cd gender_microservice/
+          npm install
+          npm run build
+
+      - name: Install and Build Microservice name
+        run: |
+          cd name_microservice/
+          npm install
+          npm run build
+
+  dockerimages:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version:
+          - 21.7.0
+
+    env:
+      PROJECT_ID: carbon-ray-415302
+      IMAGE_NAME_MS_AGE: node_microservice_age
+      IMAGE_NAME_MS_GENDER: node_microservice_gender
+      IMAGE_NAME_MS_NAME: node_microservice_name
+      REPOSITORY: sa
+
+    steps:
+      - name: Checkout and copy code to workflow
+        uses: actions/checkout@v2
+
+      - name: Configure Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      
+      # Configurar credenciales de Google Cloud Platform
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
+
+      # Permisos
+      - name: Set execute permissions for script
+        run: chmod +x ./scripts/git_update.sh
+
+      # Configurar Tags automaticamente
+      - name: Automatic Tagging of Releases
+        id: increment-git-tag
+        run: |
+          ./scripts/git_update.sh -v major        
+        shell: bash
+
+      # Debug Tag
+      - name: Debug Git Tag
+        run: |
+          echo "Git Tag: <${{ steps.increment-git-tag.outputs.git-tag }}>"      
+
+      # Configurar Docker con autenticación de Google Cloud
+      - name: Configure Docker
+        run: |
+          gcloud auth configure-docker --quiet
+          gcloud auth configure-docker us-east1-docker.pkg.dev --quiet
+          
+      # Configurar microservicios
+      - name: Push Docker Image to Artifact Registry Microservice age
+        env:
+          GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
+        run: |
+          cd age_microservice/
+          docker build -t $IMAGE_NAME_MS_AGE:latest .
+          docker tag $IMAGE_NAME_MS_AGE:latest us-east1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS_AGE:latest
+          docker tag $IMAGE_NAME_MS_AGE:latest us-east1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS_AGE:${{ steps.increment-git-tag.outputs.git-tag }}
+          docker push us-east1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS_AGE:latest
+          docker push us-east1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS_AGE:${{ steps.increment-git-tag.outputs.git-tag }}
+
+      - name: Push Docker Image to Artifact Registry Microservice gender
+        env:
+          GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
+        run: |
+          cd gender_microservice/
+          docker build -t $IMAGE_NAME_MS_GENDER:latest .
+          docker tag $IMAGE_NAME_MS_GENDER:latest us-east1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS_GENDER:latest
+          docker tag $IMAGE_NAME_MS_GENDER:latest us-east1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS_GENDER:${{ steps.increment-git-tag.outputs.git-tag }}
+          docker push us-east1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS_GENDER:latest
+          docker push us-east1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS_GENDER:${{ steps.increment-git-tag.outputs.git-tag }}
+
+      - name: Push Docker Image to Artifact Registry Microservice name
+        env:
+          GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
+        run: |
+          cd name_microservice/
+          docker build -t $IMAGE_NAME_MS_NAME:latest .
+          docker tag $IMAGE_NAME_MS_NAME:latest us-east1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS_NAME:latest
+          docker tag $IMAGE_NAME_MS_NAME:latest us-east1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS_NAME:${{ steps.increment-git-tag.outputs.git-tag }}
+          docker push us-east1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS_NAME:latest
+          docker push us-east1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS_NAME:${{ steps.increment-git-tag.outputs.git-tag }}
+
+      # Kubernets
+      - name: Deploy to GKE cluster
+        uses: ameydev/gke-kubectl-action@master
+        env:
+          PROJECT_ID: carbon-ray-415302
+          APPLICATION_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS_BASE64 }}
+          CLUSTER_NAME: cluster-production
+          ZONE_NAME: us-central1-c
+        with:
+          args: apply -f k8s/

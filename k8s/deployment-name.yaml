@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: name-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: name
+  template:
+    metadata:
+      labels:
+        app: name
+    spec:
+      containers:
+        - name: name
+          image: us-east1-docker.pkg.dev/carbon-ray-415302/sa/node_microservice_name:latest
+          ports:
+            - containerPort: 3002
