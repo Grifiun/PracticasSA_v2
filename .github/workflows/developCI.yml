@@ -65,12 +65,20 @@ jobs:
         with:
           node-version: '21.7.0'
       
+      # Configurar Entorno de Desarrollo
       - name: Set environment variable
-        run: echo "ENVIRONMENT=${{ env.ENVIRONMENT }}" >> $GITHUB_ENV
-
+        run: echo "ENVIRONMENT=${{ env.ENVIRONMENT }}" >> $GITHUB_ENV      
+      
       - name: Display Environment
         run: | 
           echo "Environment: $ENVIRONMENT"
+
+      - name: Replace image name in k8s config
+        run: |
+          for file in k8s/*.yaml; do
+            envsubst '${ENVIRONMENT}' < "$file" > "${file%.yaml}.temp"
+            mv "${file%.yaml}.temp" "$file"
+          done
       
       # Configurar credenciales de Google Cloud Platform
       - id: 'auth'
@@ -142,17 +150,6 @@ jobs:
           docker tag $IMAGE_NAME_MS:latest $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:${{ steps.increment-git-tag.outputs.git-tag }}
           docker push $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:latest
           docker push $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:${{ steps.increment-git-tag.outputs.git-tag }}
-
-      # Configurar nombre del ENVIRONMENT
-      - name: Set environment variable
-        run: echo "ENVIRONMENT=${{ env.ENVIRONMENT }}" >> $GITHUB_ENV
-        
-      - name: Replace image name in k8s config
-        run: |
-          for file in k8s/*.yaml; do
-            envsubst '${ENVIRONMENT}' < "$file" > "${file%.yaml}.temp"
-            mv "${file%.yaml}.temp" "$file"
-          done
 
       # Kubernets
       - name: Deploy to GKE cluster
