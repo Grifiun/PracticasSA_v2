@@ -33,6 +33,17 @@ jobs:
       - name: 'Use gcloud CLI'
         run: 'gcloud info'
           
+      # Configurar nombre del ENVIRONMENT
+      - name: Set environment variable
+        run: echo "ENVIRONMENT=${{ env.ENVIRONMENT }}" >> $GITHUB_ENV
+        
+      - name: Replace image name in k8s config
+        run: |
+          for file in k8s/*.yaml; do
+            envsubst '${ENVIRONMENT}' < "$file" > "${file%.yaml}.temp"
+            mv "${file%.yaml}.temp" "$file"
+          done
+          
       # Kubernets
       - name: Deploy to GKE cluster
         uses: ameydev/gke-kubectl-action@master
