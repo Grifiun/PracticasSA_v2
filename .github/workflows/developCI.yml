@@ -18,6 +18,7 @@ jobs:
       - name: Checkout and copy code to workflow
         uses: actions/checkout@v2
 
+      # Configure Node
       - name: Configure Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
