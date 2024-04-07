@@ -3,7 +3,7 @@ name: SA_P3 CI
 on:
   pull_request:
     branches:
-      - develop
+      - release
 
 jobs:
   build_stage:
@@ -18,7 +18,6 @@ jobs:
       - name: Checkout and copy code to workflow
         uses: actions/checkout@v2
 
-      # Configure Node
       - name: Configure Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
@@ -42,7 +41,7 @@ jobs:
           cd name_microservice/
           npm install
           npm run build
-
+           
   delivery_stage:
     runs-on: ubuntu-latest
 
@@ -55,33 +54,24 @@ jobs:
       REGION_REGISTRY: us-east1-docker.pkg.dev
       PROJECT_ID: carbon-ray-415302
       REPOSITORY: sa
-      ENVIRONMENT: develop
+      ENVIRONMENT: production
 
     steps:
-      - name: Checkout code
+      - name: Checkout and copy code to workflow
         uses: actions/checkout@v2
 
-      - name: Setup Node.js
+      - name: Configure Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
-          node-version: '21.7.0'
+          node-version: ${{ matrix.node-version }}
       
-      # Configurar Entorno de Desarrollo
       - name: Set environment variable
-        run: echo "ENVIRONMENT=${{ env.ENVIRONMENT }}" >> $GITHUB_ENV      
-      
+        run: echo "ENVIRONMENT=${{ env.ENVIRONMENT }}" >> $GITHUB_ENV
+  
       - name: Display Environment
         run: | 
-          echo "Environment: $ENVIRONMENT"
+          echo "Environment: $ENVIRONMENT"  
 
-      - name: Replace image name in k8s config
-        run: |
-          ls 
-          for file in ./k8s/*.yaml; do
-            envsubst '${ENVIRONMENT}' < "$file" > "${file%.yaml}.temp"
-            mv "${file%.yaml}.temp" "$file"
-          done
-      
       # Configurar credenciales de Google Cloud Platform
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
@@ -102,7 +92,7 @@ jobs:
       - name: Automatic Tagging of Releases
         id: increment-git-tag
         run: |
-          ./scripts/git_update.sh -v patch        
+          ./scripts/git_update.sh -v minor        
         shell: bash
 
       # Debug Tag
@@ -152,14 +142,3 @@ jobs:
           docker tag $IMAGE_NAME_MS:latest $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:${{ steps.increment-git-tag.outputs.git-tag }}
           docker push $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:latest
           docker push $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:${{ steps.increment-git-tag.outputs.git-tag }}
-
-      # Kubernets
-      - name: Deploy to GKE cluster
-        uses: ameydev/gke-kubectl-action@master
-        env:
-          PROJECT_ID: carbon-ray-415302
-          APPLICATION_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS_BASE64 }}
-          CLUSTER_NAME: cluster-pr2
-          ZONE_NAME: us-central1-c
-        with:
-          args: apply -f k8s/
