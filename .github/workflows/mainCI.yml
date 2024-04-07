@@ -23,7 +23,8 @@ jobs:
 
       - name: Replace image name in k8s config
         run: |
-          for file in k8s/*.yaml; do
+          ls
+          for file in ./k8s/*.yaml; do 
             envsubst '${ENVIRONMENT}' < "$file" > "${file%.yaml}.temp"
             mv "${file%.yaml}.temp" "$file"
           done      
