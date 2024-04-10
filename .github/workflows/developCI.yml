@@ -95,8 +95,7 @@ jobs:
       - name: Automatic Tagging of Releases
         id: increment-git-tag
         run: |
-          ./scripts/git_update.sh -v patch        
-        shell: bash
+          bash scripts/git_update.sh -v patch 
 
       # Debug Tag
       - name: Debug Git Tag
