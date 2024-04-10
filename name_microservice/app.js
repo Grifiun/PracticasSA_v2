@@ -21,6 +21,7 @@ app.get("/name", async (req, res) => {
         const genderResponse = await axios.get(`http://gender-service:3001/gender?name=${name}`);
 
         const combinedResponse = {
+            hora: "April 10, 3:03 PM",
             age: ageResponse.data,
             gender: genderResponse.data
         };
