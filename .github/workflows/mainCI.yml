@@ -17,13 +17,6 @@ jobs:
         uses: actions/checkout@v2
 
       # Configurar entorno de produccion
-      - name: Set environment variable
-        run: echo "ENVIRONMENT=${{ env.ENVIRONMENT }}" >> $GITHUB_ENV
-        
-      - name: Display Environment
-        run: | 
-          echo "Environment: $ENVIRONMENT"  
-
       - name: Replace image name in k8s config
         run: |
           ls

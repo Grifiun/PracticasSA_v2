@@ -67,13 +67,6 @@ jobs:
           node-version: '21.7.0'
       
       # Configurar Entorno de Desarrollo
-      - name: Set environment variable
-        run: echo "ENVIRONMENT=${{ env.ENVIRONMENT }}" >> $GITHUB_ENV      
-      
-      - name: Display Environment
-        run: | 
-          echo "Environment: $ENVIRONMENT"
-
       - name: Replace image name in k8s config
         run: |
           ls 
@@ -114,7 +107,7 @@ jobs:
       - name: Configure Docker
         run: |
           gcloud auth configure-docker --quiet
-          gcloud auth configure-docker us-east1-docker.pkg.dev --quiet
+          gcloud auth configure-docker $REGION_REGISTRY --quiet
           
       # Configurar microservicios
       - name: Push Docker Image to Artifact Registry Microservice age
