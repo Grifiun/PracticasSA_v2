@@ -86,11 +86,7 @@ jobs:
 
       - name: 'Use gcloud CLI'
         run: 'gcloud info'
-
-      # Permisos
-      - name: Set execute permissions for script
-        run: chmod +x ./scripts/git_update.sh
-
+        
       # Configurar Tags automaticamente
       - name: Automatic Tagging of Releases
         id: increment-git-tag
