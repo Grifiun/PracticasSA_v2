@@ -95,7 +95,8 @@ jobs:
       - name: Automatic Tagging of Releases
         id: increment-git-tag
         run: |
-          bash scripts/git_update.sh -v patch 
+          ./scripts/git_update.sh -v minor        
+        shell: bash
 
       # Debug Tag
       - name: Debug Git Tag
@@ -114,7 +115,7 @@ jobs:
           GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
           IMAGE_NAME_MS: node_microservice_age_${{ env.ENVIRONMENT }}
         run: |
-          bash scripts/build_and_push_image.sh --directory="name_microservice/" --region="$REGION_REGISTRY" --project_id="$PROJECT_ID" --repository="$REPOSITORY" --image_name="$IMAGE_NAME_MS" --tag="$GIT_TAG" 
+          bash scripts/build_and_push_image.sh --directory="age_microservice/" --region="$REGION_REGISTRY" --project_id="$PROJECT_ID" --repository="$REPOSITORY" --image_name="$IMAGE_NAME_MS" --tag="$GIT_TAG" 
 
       - name: Push Docker Image to Artifact Registry Microservice gender
         env:
