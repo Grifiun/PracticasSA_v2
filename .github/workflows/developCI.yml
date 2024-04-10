@@ -110,7 +110,7 @@ jobs:
           GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
           IMAGE_NAME_MS: node_microservice_age_${{ env.ENVIRONMENT }}
         run: |
-          bash scripts/build_and_push_image.sh --directory="name_microservice/" --region="$REGION_REGISTRY" --project_id="$PROJECT_ID" --repository="$REPOSITORY" --image_name="$IMAGE_NAME_MS" --tag="$GIT_TAG" 
+          bash scripts/build_and_push_image.sh --directory="age_microservice/" --region="$REGION_REGISTRY" --project_id="$PROJECT_ID" --repository="$REPOSITORY" --image_name="$IMAGE_NAME_MS" --tag="$GIT_TAG" 
 
       - name: Push Docker Image to Artifact Registry Microservice gender
         env:
@@ -124,7 +124,7 @@ jobs:
           GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
           IMAGE_NAME_MS: node_microservice_name_${{ env.ENVIRONMENT }}
         run: |
-          bash scripts/build_and_push_image.sh --directory="age_microservice/" --region="$REGION_REGISTRY" --project_id="$PROJECT_ID" --repository="$REPOSITORY" --image_name="$IMAGE_NAME_MS" --tag="$GIT_TAG" 
+          bash scripts/build_and_push_image.sh --directory="name_microservice/" --region="$REGION_REGISTRY" --project_id="$PROJECT_ID" --repository="$REPOSITORY" --image_name="$IMAGE_NAME_MS" --tag="$GIT_TAG" 
         
       # Kubernets
       - name: Deploy to GKE cluster
