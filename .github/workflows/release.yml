@@ -65,13 +65,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       
-      - name: Set environment variable
-        run: echo "ENVIRONMENT=${{ env.ENVIRONMENT }}" >> $GITHUB_ENV
-  
-      - name: Display Environment
-        run: | 
-          echo "Environment: $ENVIRONMENT"  
-
       # Configurar credenciales de Google Cloud Platform
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
@@ -104,7 +97,7 @@ jobs:
       - name: Configure Docker
         run: |
           gcloud auth configure-docker --quiet
-          gcloud auth configure-docker us-east1-docker.pkg.dev --quiet
+          gcloud auth configure-docker $REGION_REGISTRY --quiet
           
       # Configurar microservicios
       - name: Push Docker Image to Artifact Registry Microservice age
@@ -112,33 +105,19 @@ jobs:
           GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
           IMAGE_NAME_MS: node_microservice_age_${{ env.ENVIRONMENT }}
         run: |
-          cd age_microservice/
-          docker build -t $IMAGE_NAME_MS:latest .
-          docker tag $IMAGE_NAME_MS:latest $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:latest
-          docker tag $IMAGE_NAME_MS:latest $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:${{ steps.increment-git-tag.outputs.git-tag }}
-          docker push $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:latest
-          docker push $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:${{ steps.increment-git-tag.outputs.git-tag }}
+          bash scripts/build_and_push_image.sh --directory="age_microservice/" --region="$REGION_REGISTRY" --project_id="$PROJECT_ID" --repository="$REPOSITORY" --image_name="$IMAGE_NAME_MS" --tag="$GIT_TAG" 
 
       - name: Push Docker Image to Artifact Registry Microservice gender
         env:
           GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
           IMAGE_NAME_MS: node_microservice_gender_${{ env.ENVIRONMENT }}
         run: |
-          cd gender_microservice/
-          docker build -t $IMAGE_NAME_MS:latest .
-          docker tag $IMAGE_NAME_MS:latest $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:latest
-          docker tag $IMAGE_NAME_MS:latest $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:${{ steps.increment-git-tag.outputs.git-tag }}
-          docker push $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:latest
-          docker push $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:${{ steps.increment-git-tag.outputs.git-tag }}
+          bash scripts/build_and_push_image.sh --directory="gender_microservice/" --region="$REGION_REGISTRY" --project_id="$PROJECT_ID" --repository="$REPOSITORY" --image_name="$IMAGE_NAME_MS" --tag="$GIT_TAG" 
 
       - name: Push Docker Image to Artifact Registry Microservice name
         env:
           GIT_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
           IMAGE_NAME_MS: node_microservice_name_${{ env.ENVIRONMENT }}
         run: |
-          cd name_microservice/
-          docker build -t $IMAGE_NAME_MS:latest .
-          docker tag $IMAGE_NAME_MS:latest $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:latest
-          docker tag $IMAGE_NAME_MS:latest $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:${{ steps.increment-git-tag.outputs.git-tag }}
-          docker push $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:latest
-          docker push $REGION_REGISTRY/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME_MS:${{ steps.increment-git-tag.outputs.git-tag }}
+          bash scripts/build_and_push_image.sh --directory="name_microservice/" --region="$REGION_REGISTRY" --project_id="$PROJECT_ID" --repository="$REPOSITORY" --image_name="$IMAGE_NAME_MS" --tag="$GIT_TAG" 
+        
