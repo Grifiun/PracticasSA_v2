@@ -11,6 +11,7 @@ const serverGender = require('../../gender_microservice/app');
 
 describe('Name Microservice | Integration test', function() {
     const name = 'John';
+    const hora = "April 10, 3:03 PM";
     const ageResponse = {
         count: 1904,
         name: name,
@@ -105,7 +106,7 @@ describe('Name Microservice | Integration test', function() {
                 const response = await axios.get(`http://localhost:${port}/name?name=${name}`);                                
                 // Aquí puedes agregar más aserciones para verificar el contenido de la respuesta según sea necesario
                 assert.ok(response);
-                assert.deepStrictEqual(response.data, { age: ageResponse, gender: genderResponse });
+                assert.deepStrictEqual(response.data, { hora: hora, age: ageResponse, gender: genderResponse });
             } catch(error) {
                 assert.fail(error);
             }
